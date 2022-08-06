@@ -4,7 +4,7 @@ import AddUser from "../components/AddUser";
 import Navbar from "../components/Navbar";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
 import { useContext } from "react";
-import LoginSignUpTab from "../components/LoginSignUpTab";
+import LoginSignUpTab from "../components/login/LoginSignUpTab";
 
 export default function Home({ session }) {
   const { accessToken } = useContext(JwtTokenContext);

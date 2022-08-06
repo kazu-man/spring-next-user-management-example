@@ -1,8 +1,8 @@
 import { useState, Fragment, useContext } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { InputField } from "./InputField";
-import { JwtTokenContext } from "../providers/JwtSessionProviders";
-import login from "../utils/login";
+import { InputField } from "../InputField";
+import { JwtTokenContext } from "../../providers/JwtSessionProviders";
+import login from "../../utils/login";
 const DialogSignUp = () => {
   const { updateAccessToken } = useContext(JwtTokenContext);
   const [isOpen, setIsOpen] = useState(false);

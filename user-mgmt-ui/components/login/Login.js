@@ -1,7 +1,7 @@
 import React, { useState, Fragment, useContext } from "react";
-import { InputField } from "./InputField";
-import { JwtTokenContext } from "../providers/JwtSessionProviders";
-import login from "../utils/login";
+import { InputField } from "../InputField";
+import { JwtTokenContext } from "../../providers/JwtSessionProviders";
+import login from "../../utils/login";
 const Login = () => {
   const { updateAccessToken } = useContext(JwtTokenContext);
   const [errors, setErrors] = useState({});
