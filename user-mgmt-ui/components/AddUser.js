@@ -1,13 +1,14 @@
 import { Dialog, Transition } from "@headlessui/react";
-import React from "react";
+import React,{useContext} from "react";
 import { Fragment, useState } from "react";
 import UserList from "./UserList";
 import Cookie from 'js-cookie';
 import { InputField } from "./InputField";
+import { JwtTokenContext } from "../providers/JwtSessionProviders";
 
 const AddUser = () => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
-  const xsrf = Cookie.get('XSRF-TOKEN');
+  const {accessToken} = useContext(JwtTokenContext)
 
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({
@@ -56,7 +57,7 @@ const AddUser = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // 'X-XSRF-TOKEN': xsrf
+        'Authorization': "Bearer " + accessToken
       },
       body: JSON.stringify(user),
     })

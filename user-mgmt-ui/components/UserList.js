@@ -1,7 +1,8 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect,useContext } from "react";
 import EditUser from "./EditUser";
 import User from "./User";
 import Cookie from 'js-cookie';
+import { JwtTokenContext } from "../providers/JwtSessionProviders";
 
 const UserList = ({ user }) => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
@@ -10,7 +11,7 @@ const UserList = ({ user }) => {
   const [userId, setUserId] = useState(null);
   const [responseUser, setResponseUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const xsrf = Cookie.get('XSRF-TOKEN');
+  const {accessToken} = useContext(JwtTokenContext)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,6 +21,7 @@ const UserList = ({ user }) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            'Authorization': "Bearer " + accessToken
           },
         });
         const users = await response.json();
@@ -36,6 +38,9 @@ const UserList = ({ user }) => {
     e.preventDefault();
     fetch(USER_API_BASE_URL + "/" + id, {
       method: "DELETE",
+      headers:{
+        'Authorization': "Bearer " + accessToken
+      }
     }).then((res) => {
       if (users) {
         setUsers((prevElement) => {

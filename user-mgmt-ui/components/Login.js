@@ -1,8 +1,12 @@
 import { signIn } from "next-auth/react";
-import React,{useState} from "react";
+import React,{useState, useContext} from "react";
 import Navbar from "./Navbar";
+import { JwtTokenContext } from "../providers/JwtSessionProviders";
 
 const Login = () => {
+  const {accessToken, updateAccessToken} = useContext(JwtTokenContext)
+
+  console.log("accessToken",accessToken)
   const [token,setToken] = useState("");
   const [user, setUser] = useState({
     id: "",
@@ -19,14 +23,15 @@ const Login = () => {
         // 'X-XSRF-TOKEN': xsrf
       },
       body: JSON.stringify({
-        username:"abc@test.com",
-        password:"ateatsfdffsf"
+        username:"admin@test.com",
+        password:"ADMIN"
       }),
 
     })
     .then(async (res) => {
       const data = await res.json();
       setToken(data.token)
+      updateAccessToken(data.token)
     })
     .catch((res) => {
       console.log(res)
@@ -64,12 +69,11 @@ const Login = () => {
   }
 
   const test = async () => {
-    console.log("Token",token)
     const res = await fetch("http://localhost:8080/api/v1/getusers",{
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer " + token
+        'Authorization': "Bearer " + accessToken
       },
 
     })

@@ -3,9 +3,14 @@ import Head from "next/head";
 import AddUser from "../components/AddUser";
 import Login from "../components/Login";
 import Navbar from "../components/Navbar";
-import UserList from "../components/UserList";
+import { JwtTokenContext } from "../providers/JwtSessionProviders";
+import { useContext } from "react";
 
 export default function Home({ session }) {
+
+  const {accessToken} = useContext(JwtTokenContext)
+
+  if (!accessToken) return <Login />;
   // if (!session) return <Login />;
   return (
     <div>

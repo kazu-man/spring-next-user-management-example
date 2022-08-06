@@ -1,11 +1,13 @@
 import "../styles/globals.css";
 import { SessionProvider } from "next-auth/react";
-
+import { JwtSessionProvider } from "../providers/JwtSessionProviders";
 function MyApp({ Component, pageProps, session }) {
   return (
-    <SessionProvider session={session}>
-      <Component {...pageProps} />
-    </SessionProvider>
+    <JwtSessionProvider>
+      <SessionProvider session={session}>
+        <Component {...pageProps} />
+      </SessionProvider>
+    </JwtSessionProvider>
   );
 }
 

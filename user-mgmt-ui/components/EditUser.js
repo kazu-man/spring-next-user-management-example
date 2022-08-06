@@ -2,9 +2,12 @@ import { Dialog, Transition } from "@headlessui/react";
 import { React, useState, useEffect, Fragment } from "react";
 import Cookie from 'js-cookie';
 import { InputField } from "./InputField";
+import { JwtTokenContext } from "../providers/JwtSessionProviders";
+import { useContext } from "react";
+
 const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
-  const xsrf = Cookie.get('XSRF-TOKEN');
+  const {accessToken} = useContext(JwtTokenContext);
   const [errors,setErrors] = useState({});
   const [user, setUser] = useState({
     id: "",
@@ -20,6 +23,7 @@ const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            'Authorization': "Bearer " + accessToken
           },
         });
         const _user = await response.json();
@@ -46,7 +50,7 @@ const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        'X-XSRF-TOKEN': xsrf
+        'Authorization': "Bearer " + accessToken
       },
       body: JSON.stringify(user),
     });
