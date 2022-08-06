@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import { Dialog, Transition } from "@headlessui/react";
 import { InputField } from "./InputField";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
-
+import login from "../utils/login";
 const Login = () => {
 
   const {updateAccessToken} = useContext(JwtTokenContext);
@@ -36,27 +36,15 @@ const Login = () => {
     setErrors({})
   }
   const signinWithSpring = async () => {
-    const res = await fetch("http://localhost:8080/api/auth/signin",{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-        // username:"admin@test.com",
-        // password:"ADMIN"
-    })
-    .then(async (res) => {
-      const data = await res.json();
-      if(!res.ok || data.error){
-        setErrors({...errors,...data.errors,authError:data.error});
-        throw new Error(response.statusText);
-      }else{
-        updateAccessToken(data.token)
-      }
-    })
-    .catch((res) => {
-      console.log(res)
-    })
+    const res = await login(user);
+
+    const data = await res.json();
+    if(!res.ok || data.error){
+      setErrors({...errors,...data.errors,authError:data.error});
+    }else{
+      updateAccessToken(data.token)
+    }
+   
   }
 
   return (
