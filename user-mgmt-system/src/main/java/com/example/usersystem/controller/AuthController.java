@@ -45,7 +45,7 @@ public class AuthController {
         try{
             
             authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
             }catch(Exception e){
                 System.out.println(e.getMessage());
 				JwtResponse jwtResponse = new JwtResponse();

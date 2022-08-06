@@ -1,122 +1,138 @@
-import { signIn } from "next-auth/react";
-import React,{useState, useContext} from "react";
+import React,{useState,Fragment,useContext} from "react";
 import Navbar from "./Navbar";
+import { Dialog, Transition } from "@headlessui/react";
+import { InputField } from "./InputField";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
 
 const Login = () => {
-  const {accessToken, updateAccessToken} = useContext(JwtTokenContext)
 
-  console.log("accessToken",accessToken)
-  const [token,setToken] = useState("");
-  const [user, setUser] = useState({
-    id: "",
-    username: "",
-    password: "",
-    email: "",
-    role:""
-  });
+  const {updateAccessToken} = useContext(JwtTokenContext);
+  const [errors,setErrors] = useState({});
+  const [user,setUser] = useState({
+    email:"",
+    password:""
+  })
+
+  const setValue = (name,value) => {
+    setUser({ ...user, [name]: value });
+    setErrors({...errors,[name]:""})
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+  function closeModal() {
+    setIsOpen(false);
+  }
+  
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function reset() {
+    closeModal(false)
+    setUser({
+      email:"",
+      username:""
+    })
+    setErrors({})
+  }
   const signinWithSpring = async () => {
     const res = await fetch("http://localhost:8080/api/auth/signin",{
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // 'X-XSRF-TOKEN': xsrf
       },
-      body: JSON.stringify({
-        username:"admin@test.com",
-        password:"ADMIN"
-      }),
-
+      body: JSON.stringify(user),
+        // username:"admin@test.com",
+        // password:"ADMIN"
     })
     .then(async (res) => {
       const data = await res.json();
-      setToken(data.token)
-      updateAccessToken(data.token)
+      if(!res.ok || data.error){
+        setErrors({...errors,...data.errors,authError:data.error});
+        throw new Error(response.statusText);
+      }else{
+        updateAccessToken(data.token)
+      }
     })
     .catch((res) => {
       console.log(res)
     })
   }
 
-  const handleChange = (e =>{
-    e.preventDefault();
-    const value = e.target.value;
-    setUser({ ...user, [e.target.name]: value });
-  
-  });
-
-  const handleSubmit = async (e) =>{
-    e.preventDefault();
-    console.log(user)
-    const jsonUser = JSON.stringify(user);
-    console.log(jsonUser)
-    const res = await fetch("http://localhost:8080/api/auth/signup",{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // 'X-XSRF-TOKEN': xsrf
-      },
-      body: jsonUser,
-
-    })
-    .then(async (res) => {
-      console.log(res)
-    })
-    .catch((res) => {
-      console.log(res.message)
-    })
-
-  }
-
-  const test = async () => {
-    const res = await fetch("http://localhost:8080/api/v1/getusers",{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': "Bearer " + accessToken
-      },
-
-    })
-    .then(async (res) => {
-      console.log(res)
-      const data = await res.json();
-      console.log(data)
-    })
-    .catch((res) => {
-      console.log(res)
-    })
-  }
   return (
     <div>
       <Navbar />
       <div className="container mx-auto my-8">
         <div className="h-12">
           <button
-            onClick={signinWithSpring}
+            onClick={openModal}
             className="rounded bg-blue-600 text-white px-6 py-2 font-semibold">
             Sign In
           </button>
-          <button
-            onClick={test}
-            className="rounded bg-blue-600 text-white px-6 py-2 font-semibold">
-            Test
-          </button>
         </div>
-      </div>
 
-      <div>
-        <form onSubmit={(e) => handleSubmit(e)}>
-          <label for="first">usename:</label>
-          <input onChange={(e => handleChange(e))} type="text" id="username" name="username" />
-          <label for="last">email:</label>
-          <input onChange={(e => handleChange(e))} type="text" id="email" name="email" />
-          <label for="last">password:</label>
-          <input onChange={(e => handleChange(e))} type="text" id="password" name="password" />
-          <label for="last">role:</label>
-          <input onChange={(e => handleChange(e))} type="text" id="role" name="role" />
-          <button type="submit">Submit</button>
-          
-        </form>
+        <Transition appear show={isOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="fixed inset-0 z-10 overflow-y-auto"
+          onClose={closeModal}>
+          <div className="min-h-screen px-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95">
+              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-md">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-medium leading-6 text-gray-900">
+                  Add new User
+                </Dialog.Title>
+                <div className="flex max-w-md max-auto">
+                  <div className="py-2">
+                      {
+                        errors.authError &&
+                        <div className="text-red-500 whitespace-pre-wrap text-sm">{errors.authError}</div>
+                      }
+
+                      <InputField
+                        type={"text"}
+                        name={"email"}
+                        value={user.email}
+                        setValue={setValue}
+                        error={errors.email}/>
+
+                      <InputField
+                        type={"text"}
+                        name={"password"}
+                        value={user.password}
+                        setValue={setValue}
+                        error={errors.password}/>
+
+                      <div className="h-14 my-8 space-x-4 pt-4">
+                      <button
+                        onClick={signinWithSpring}
+                        className="rounded text-white font-semibold bg-green-400 hover:bg-green-700 py-2 px-6">
+                        Save
+                      </button>
+                      <button
+                        onClick={reset}
+                        className="rounded text-white font-semibold bg-red-400 hover:bg-red-700 py-2 px-6">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
+
       </div>
     </div>
   );
