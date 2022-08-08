@@ -2,6 +2,8 @@ import React, { useState, Fragment, useContext } from "react";
 import { InputField } from "../InputField";
 import { JwtTokenContext } from "../../providers/JwtSessionProviders";
 import login from "../../utils/login";
+import cookies from "js-cookie"
+
 const Login = () => {
   const { updateAccessToken } = useContext(JwtTokenContext);
   const [errors, setErrors] = useState({});
@@ -22,6 +24,7 @@ const Login = () => {
       setErrors({ ...errors, ...data.errors, authError: data.error });
     } else {
       updateAccessToken(data.token);
+      cookies.set("jwt-token",data.token);
     }
   };
 

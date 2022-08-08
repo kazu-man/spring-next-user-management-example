@@ -51,7 +51,10 @@ public class LatestSecurityConfiguration {
         // .formLogin()
         //     .and()
         .cors()
-            .configurationSource(this.corsConfigurationSource());
+            .configurationSource(this.corsConfigurationSource())
+        .and()
+        .logout()
+        .logoutSuccessUrl("http://localhost:3000");
         http.apply(JwtTokenConfigurer);
  
         return http.build();
