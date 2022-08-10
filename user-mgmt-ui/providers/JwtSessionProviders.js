@@ -5,13 +5,11 @@ export const JwtTokenContext = createContext();
 export const JwtSessionProvider = ({ children }) => {
   const [jwtToken, setJwtToken] = useState({
     accessToken: null,
-    updateAccessToken: (val) => {
-      setJwtToken({ ...jwtToken, accessToken: val });
-    },
+    refreshToken:null,  
   });
 
   return (
-    <JwtTokenContext.Provider value={jwtToken}>
+    <JwtTokenContext.Provider value={{jwtToken,setJwtToken}}>
       {children}
     </JwtTokenContext.Provider>
   );

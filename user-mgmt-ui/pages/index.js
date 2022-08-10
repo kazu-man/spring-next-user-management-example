@@ -8,12 +8,21 @@ import LoginSignUpTab from "../components/login/LoginSignUpTab";
 import cookies from "js-cookie"
 
 export default function Home({ session }) {
-  const { accessToken, updateAccessToken} = useContext(JwtTokenContext);
+  const {jwtToken,setJwtToken} = useContext(JwtTokenContext);
+  const { accessToken} = jwtToken;
   
   //ログインチェック
   useEffect(()=>{    
     const tokenInCookie = cookies.get("jwt-token");
-    updateAccessToken(tokenInCookie);
+    const refreshTokenInCookie = cookies.get("refresh-token");
+    setJwtToken((old)=>  {
+      return {
+        ...old,
+        accessToken:tokenInCookie,
+        refreshToken:refreshTokenInCookie
+      }
+    })
+
   },[])
 
   if (!accessToken) return <LoginSignUpTab />;

@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.example.usersystem.auth.AuthEntryPointJwt;
 import com.example.usersystem.auth.JwtTokenConfigurer;
 
 //Spring Security 5.7.1 or newer, or Spring Boot 2.7.0 or newer,
@@ -25,6 +26,8 @@ public class LatestSecurityConfiguration {
     private UserDetailsService customUserDetailsService;
     @Autowired
     JwtTokenConfigurer JwtTokenConfigurer;
+    @Autowired
+	private AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -37,6 +40,7 @@ public class LatestSecurityConfiguration {
         http
         .csrf()
         .disable()
+        .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
         .authorizeHttpRequests()
         .antMatchers("/api/v1/getusers")
         .hasAuthority("USER")

@@ -5,10 +5,12 @@ import UserList from "./UserList";
 import Cookie from 'js-cookie';
 import { InputField } from "./InputField";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
+import retrieveRefreshToken from "../utils/retrieveRefreshToken";
 
 const AddUser = () => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
-  const {accessToken} = useContext(JwtTokenContext)
+  const {jwtToken,setJwtToken} = useContext(JwtTokenContext)
+  const {accessToken, refreshToken} = jwtToken;
 
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({
@@ -51,24 +53,30 @@ const AddUser = () => {
     setIsOpen(false);
   };
 
-  const saveUser = async (e) => {
-    e.preventDefault();
+  const saveUser = async (accessToken,refreshToken) => {
+
     const response = await fetch(USER_API_BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer " + accessToken
+        'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
       },
       body: JSON.stringify(user),
     })
     .then(async (response)=> {
+      
       const data = await response.json();
-      if (!response.ok) {
+      if (response.ok) {
+        setResponseUser(data);
+        reset();
+      
+      }else if(response.status === 401 && data.refreshToken){
+
+        await retrieveRefreshToken(data,saveUser,setJwtToken);
+
+      }else{
         setErrors({...errors,...data.errors});
-        throw new Error(response.statusText);
       }
-      setResponseUser(data);
-      reset();
 
     })
     .catch((e)=>{
@@ -141,7 +149,7 @@ const AddUser = () => {
 
                       <div className="h-14 my-8 space-x-4 pt-4">
                       <button
-                        onClick={saveUser}
+                        onClick={() => saveUser(accessToken,refreshToken)}
                         className="rounded text-white font-semibold bg-green-400 hover:bg-green-700 py-2 px-6">
                         Save
                       </button>

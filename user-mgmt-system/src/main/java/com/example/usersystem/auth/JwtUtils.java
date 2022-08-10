@@ -1,13 +1,24 @@
 package com.example.usersystem.auth;
 
 import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import com.example.usersystem.entity.CustomUserDetail;
-import io.jsonwebtoken.*;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtUtils {
@@ -19,8 +30,13 @@ public class JwtUtils {
 
 	public String generateJwtToken(Authentication authentication) {
 		CustomUserDetail userPrincipal = (CustomUserDetail) authentication.getPrincipal();
+		return generateTokenFromUsername(userPrincipal.getUsername());
+
+	}
+
+	public String generateTokenFromUsername(String username) {
 		return Jwts.builder()
-				.setSubject((userPrincipal.getUsername()))
+				.setSubject((username))
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -47,5 +63,21 @@ public class JwtUtils {
 			logger.error("JWT claims string is empty: {}", e.getMessage());
 		}
 		return false;
+	}
+
+	public String parseJwt(HttpServletRequest request) {
+		String headerAuth = request.getHeader("Authorization");
+		if(StringUtils.hasText(headerAuth)){
+			System.out.println(headerAuth);
+			headerAuth = headerAuth.substring(0, headerAuth.indexOf("REFRESH_TOKEN"));
+		}
+		if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+			return headerAuth.substring(7, headerAuth.length());
+		}
+		return null;
+	}
+
+	public String getJwtSecret(){
+		return jwtSecret;
 	}
 }

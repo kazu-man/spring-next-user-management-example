@@ -4,7 +4,7 @@ import { InputField } from "../InputField";
 import { JwtTokenContext } from "../../providers/JwtSessionProviders";
 import login from "../../utils/login";
 const DialogSignUp = () => {
-  const { updateAccessToken } = useContext(JwtTokenContext);
+  const { setJwtToken } = useContext(JwtTokenContext);
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({
     id: "",
@@ -58,7 +58,13 @@ const DialogSignUp = () => {
         } else {
           const loginRes = await login(user);
           const data = await loginRes.json();
-          updateAccessToken(data.token);
+          setJwtToken((old)=>  {
+            return {
+              ...old,
+              accessToken:data.token,
+              refreshToken:data.refreshToken
+            }
+          })
         }
       })
       .catch((res) => {

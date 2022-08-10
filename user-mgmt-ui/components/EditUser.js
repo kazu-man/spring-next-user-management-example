@@ -4,10 +4,12 @@ import Cookie from 'js-cookie';
 import { InputField } from "./InputField";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
 import { useContext } from "react";
+import retrieveRefreshToken from "../utils/retrieveRefreshToken";
 
 const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
-  const {accessToken} = useContext(JwtTokenContext);
+  const {jwtToken,setJwtToken} = useContext(JwtTokenContext);
+  const {accessToken,refreshToken} = jwtToken;
   const [errors,setErrors] = useState({});
   const [user, setUser] = useState({
     id: "",
@@ -17,23 +19,33 @@ const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
     role:""
   });
   useEffect(() => {
-    const fetchData = async () => {
+    const getUser = async (accessToken,refreshToken) => {
       try {
         const response = await fetch(USER_API_BASE_URL + "/" + userId, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer " + accessToken
+            'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
           },
         });
-        const _user = await response.json();
-        setUser(_user);
+
+        const data = await response.json();
+
+        if(response.ok){
+          setUser(data);
+
+        }else if(response.status === 401 && data.refreshToken){
+      
+          await retrieveRefreshToken(data,getUser,setJwtToken);
+          
+        }
       } catch (error) {
         console.log(error);
       }
+
     };
     if (userId) {
-      fetchData();
+      getUser(accessToken,refreshToken);
     }
   }, [userId]);
 
@@ -44,25 +56,32 @@ const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
   };
   
 
-  const updateUser = async (e) => {
-    e.preventDefault();
+  const updateUser = async (accessToken,refreshToken) => {
+
     const response = await fetch(USER_API_BASE_URL + "/" + userId, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer " + accessToken
+        'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
       },
       body: JSON.stringify(user),
     });
     
     const data = await response.json();
 
-    if (!response.ok) {
+    if (response.ok) {
+      applyEditUser(data);
+
+    }else if(response.status === 401 && data.refreshToken){
+      
+      await retrieveRefreshToken(data,updateUser,setJwtToken);
+      
+    }else{
       console.log(data.errors)
       setErrors({...errors,...data.errors});
       return;
+
     }
-    applyEditUser(data);
   };
 
   return (
@@ -112,7 +131,7 @@ const EditUser = ({ userId, applyEditUser, showModal ,closeEditModal}) => {
 
                   <div className="h-14 my-4 space-x-4 pt-4">
                     <button
-                      onClick={updateUser}
+                      onClick={() => updateUser(accessToken,refreshToken)}
                       className="rounded text-white font-semibold bg-green-400 hover:bg-green-700 py-2 px-6">
                       Update
                     </button>

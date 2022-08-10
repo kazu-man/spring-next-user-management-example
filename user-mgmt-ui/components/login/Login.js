@@ -5,7 +5,7 @@ import login from "../../utils/login";
 import cookies from "js-cookie"
 
 const Login = () => {
-  const { updateAccessToken } = useContext(JwtTokenContext);
+  const { setJwtToken } = useContext(JwtTokenContext);
   const [errors, setErrors] = useState({});
   const [user, setUser] = useState({
     email: "",
@@ -23,8 +23,15 @@ const Login = () => {
     if (!res.ok || data.error) {
       setErrors({ ...errors, ...data.errors, authError: data.error });
     } else {
-      updateAccessToken(data.token);
+      setJwtToken((old)=>  {
+        return {
+          ...old,
+          accessToken:data.token,
+          refreshToken:data.refreshToken
+        }
+      })
       cookies.set("jwt-token",data.token);
+      cookies.set("refresh-token",data.refreshToken);
     }
   };
 

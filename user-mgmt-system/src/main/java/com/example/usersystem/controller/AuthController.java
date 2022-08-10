@@ -26,6 +26,7 @@ import com.example.usersystem.payload.request.SignUpRequest;
 import com.example.usersystem.payload.response.JwtResponse;
 import com.example.usersystem.payload.response.MessageResponse;
 import com.example.usersystem.repository.UserRepository;
+import com.example.usersystem.service.RefreshTokenService;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
@@ -38,6 +39,8 @@ public class AuthController {
 	UserRepository userRepository;
 	@Autowired
 	PasswordEncoder encoder;
+	@Autowired
+	RefreshTokenService refreshTokenService;
 
 	@PostMapping("/signin")
 	public JwtResponse authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -55,6 +58,7 @@ public class AuthController {
 			
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String jwt = jwtUtils.generateJwtToken(authentication);
+			String refreshToken = refreshTokenService.generateRefreshToken(loginRequest.getEmail());
 			
 			CustomUserDetail userDetails = (CustomUserDetail) authentication.getPrincipal();		
 			List<String> roles = userDetails.getAuthorities().stream()
@@ -62,7 +66,8 @@ public class AuthController {
 			.collect(Collectors.toList());
             JwtResponse jwtResponse = new JwtResponse(jwt, 
             userDetails.getUsername(), 
-            roles);
+            roles,
+			refreshToken);
             return jwtResponse;
 	}
 
