@@ -9,8 +9,7 @@ import cookies from "js-cookie"
 
 export default function Home({ session }) {
   const {jwtToken,setJwtToken} = useContext(JwtTokenContext);
-  const { accessToken} = jwtToken;
-  
+  const {accessToken} = jwtToken;
   //ログインチェック
   useEffect(()=>{    
     const tokenInCookie = cookies.get("jwt-token");

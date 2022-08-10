@@ -2,7 +2,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import React,{useContext} from "react";
 import UserList from "./UserList";
-import Cookie from 'js-cookie';
 import { InputField } from "./InputField";
 import { JwtTokenContext } from "../providers/JwtSessionProviders";
 import retrieveRefreshToken from "../utils/retrieveRefreshToken";
@@ -11,6 +10,8 @@ const AddUser = () => {
   const USER_API_BASE_URL = "http://localhost:8080/api/v1/users";
   const {jwtToken,setJwtToken} = useContext(JwtTokenContext)
   const {accessToken, refreshToken} = jwtToken;
+  let currentAccessToken = accessToken;
+  let currentRefreshToken = refreshToken;
 
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({
@@ -53,13 +54,13 @@ const AddUser = () => {
     setIsOpen(false);
   };
 
-  const saveUser = async (accessToken,refreshToken) => {
-
+  const saveUser = async () => {
+    // useCommonFetch()
     const response = await fetch(USER_API_BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
+        'Authorization': "Bearer " + currentAccessToken + "REFRESH_TOKEN" + currentRefreshToken,
       },
       body: JSON.stringify(user),
     })
@@ -72,7 +73,9 @@ const AddUser = () => {
       
       }else if(response.status === 401 && data.refreshToken){
 
-        await retrieveRefreshToken(data,saveUser,setJwtToken);
+        currentAccessToken = data.token;
+        currentRefreshToken = data.refreshToken;    
+        await retrieveRefreshToken(data,saveUser,setJwtToken)
 
       }else{
         setErrors({...errors,...data.errors});
@@ -84,7 +87,6 @@ const AddUser = () => {
       
     })
   };
-
 
 
   return (

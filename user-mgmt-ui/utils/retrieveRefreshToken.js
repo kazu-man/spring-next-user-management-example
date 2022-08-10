@@ -7,8 +7,7 @@ const retrieveRefreshToken = async (data,callback,setJwtToken) => {
           refreshToken:data.refreshToken
         }
       })
-
-    await callback(data.token,data.refreshToken);
+    await callback();
     console.log("second request with refresh token")
 }
 

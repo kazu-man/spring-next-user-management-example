@@ -14,18 +14,19 @@ const UserList = ({ user }) => {
   const [showModal, setShowModal] = useState(false);
   const {jwtToken, setJwtToken} = useContext(JwtTokenContext)
   const {accessToken,refreshToken} = jwtToken;
-
+  let currentAccessToken = accessToken;
+  let currentRefreshToken = refreshToken;
 
   useEffect(() => {
 
-    const fetchData = async (accessToken,refreshToken) => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const response = await fetch(USER_API_BASE_URL, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
+            'Authorization': "Bearer " + currentAccessToken + "REFRESH_TOKEN" + currentRefreshToken,
           },
         });
         const data = await response.json();
@@ -33,7 +34,8 @@ const UserList = ({ user }) => {
           setUsers(data);
         //token切れの場合は再度リクエストする
         }else if(response.status === 401 && data.refreshToken){
-          
+          currentAccessToken = data.token;
+          currentRefreshToken = data.refreshToken;      
           await retrieveRefreshToken(data,fetchData,setJwtToken);
         }
       } catch (error) {
@@ -41,17 +43,17 @@ const UserList = ({ user }) => {
       }
       setLoading(false);
     };
-    fetchData(accessToken,refreshToken)
+    fetchData()
   }, [user, responseUser]);
 
   const deleteUser = (e, id) => {
     e.preventDefault();
 
-    const deleteFetch = async (accessToken,refreshToken) => {
+    const deleteFetch = async () => {
         const res = await fetch(USER_API_BASE_URL + "/" + id, {
         method: "DELETE",
         headers:{
-          'Authorization': "Bearer " + accessToken + "REFRESH_TOKEN" + refreshToken,
+          'Authorization': "Bearer " + currentAccessToken + "REFRESH_TOKEN" + currentRefreshToken,
         }
       })
 
@@ -64,13 +66,14 @@ const UserList = ({ user }) => {
           });
         }
       }else if(res.status === 401 && data.refreshToken){
-
+        currentAccessToken = data.token;
+        currentRefreshToken = data.refreshToken;      
         await retrieveRefreshToken(data,deleteFetch,setJwtToken);
 
       }
     }
 
-    deleteFetch(accessToken,refreshToken)
+    deleteFetch()
   };
 
   const editUser = (e, id) => {
