@@ -37,7 +37,7 @@ const Login = () => {
 
   return (
     <div>
-      <div className="min-h-screen text-center">
+      <div className="text-center">
         <div className="inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-md">
           <div className="flex max-w-md max-auto">
             <div className="py-2 mx-auto">
