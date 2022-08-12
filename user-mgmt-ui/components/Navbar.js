@@ -1,13 +1,9 @@
 // import { signOut, useSession } from "next-auth/react";
-// import { fetchData } from "next-auth/client/_utils";
-import {useContext} from "react";
 import Image from "next/image";
-import { JwtTokenContext } from "../providers/JwtSessionProviders";
 import cookies from "js-cookie"
 
 const Navbar = () => {
   // const { data: session, status } = useSession();
-  const { accessToken } = useContext(JwtTokenContext);
   
   const signOut = async () => {
     
@@ -15,7 +11,6 @@ const Navbar = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer " + accessToken
       },
     });
 
@@ -23,6 +18,7 @@ const Navbar = () => {
       alert("logout 失敗")
     }else {
       cookies.remove("jwt-token");
+      cookies.remove("refresh-token");      
       location.reload();
 
     }
